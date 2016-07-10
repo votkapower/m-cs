@@ -1,0 +1,107 @@
+body
+{
+	background-color:#272727;
+	font-size:11px;
+	font-family:verdana,tahoma,arial,sans-serif
+}
+
+a:link
+{ 
+	text-decoration:none;
+	color:#FFFFFF;
+}
+
+a:visited
+{
+	color:#FFFFFF;
+}
+
+a:hover
+{
+	color:#FFFFFF;
+}
+
+a:active
+{
+	color:#FFFFFF;
+}
+
+.list_table
+{
+	margin-left:auto;
+	margin-right:auto;
+	border-collapse:collapse;
+	color:#FFFFFF;
+}
+
+.list_row
+{
+	white-space:nowrap;
+	background-image:url("images/background.gif");
+	border:1px;
+	border-style:solid;
+	color:#FFFFFF;
+	border-color:#FFFFFF;
+}
+
+.settings_table
+{
+    color:#FFFFFF;
+	margin-left:auto;
+	margin-right:auto;
+	border-collapse:collapse;
+}
+
+.settings_row
+{
+	white-space:nowrap;
+	text-align:center;
+	background-image:url("images/background.gif");
+	border:1px;
+	border-style:solid;
+	border-color:#FFFFFF;
+	color:#FFFFFF;
+}
+
+.settings_spacer
+{
+	width:20px;
+	border:1px;
+	border-style:solid;
+	border-color:#FFFFFF;
+	color:#FFFFFF;
+}
+
+.players_table
+{
+	margin-left:auto;
+	margin-right:auto;
+	border-collapse:collapse;
+	color:#FFFFFF;
+}
+
+.players_row
+{
+	white-space:nowrap;
+	text-align:center;
+	background-image:url("images/background.gif");
+	border:1px;
+	border-style:solid;
+	border-color:#FFFFFF;
+}
+
+.players_spacer
+{
+	width:20px;
+	border:1px;
+	border-style:solid;
+	border-color:#FFFFFF;
+}
+
+.m 
+{
+
+color: #FFFFFF;
+text-decoration: none;
+
+}

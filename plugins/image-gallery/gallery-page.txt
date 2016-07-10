@@ -1,0 +1,169 @@
+<?php
+$w = trim(htmlspecialchars($_GET['w']));
+switch ($w)
+{
+ default:
+	$tableName="image-gallery"; // tablica		
+	$targetpage = "./?p=gallery"; 	// URL
+	$limit = 30;  // kolko rezulatata na stranica !
+	
+	$query = "SELECT COUNT(*) as num FROM `$tableName` ";
+	$total_pages = mysqli_fetch_array(mysqli_query($query));
+	$total_pages = $total_pages[num];
+	$stages = 3;
+	$page = (int)$_GET['page'];
+	if($page){
+		$start = ($page - 1) * $limit; 
+	}else{
+		$start = 0;	
+		}	
+	
+    // Get page data
+	 $_conf = mysqli_query($_db,"SELECT `image`,`title`,`timestamp`,`id`,`thumb_image` FROM `$tableName`  ORDER BY `timestamp` DESC LIMIT $start,$limit");
+	
+	
+	// Initial page num setup
+	if ($page == 0 || !$page){$page = 1;}
+	$prev = $page - 1;	
+	$next = $page + 1;							
+	$lastpage = ceil($total_pages/$limit);		
+	$LastPagem1 = $lastpage - 1;					
+	if($page > $lastpage) {  $page = 1;}
+	
+	$paginate = '';
+	if($lastpage > 1)
+	{	
+	
+
+	
+	
+		$paginate .= "<div class='paginate'>";
+		// Previous
+		if ($page > 1){
+			$paginate.= "<a href='$targetpage&page=$prev' class='firstPageAct'>Предишна</a>";
+		}else{
+			$paginate.= "<span class='disabled'>Предишна</span>";	}
+			
+
+		
+		// Pages	
+		if ($lastpage < 7 + ($stages * 2))	// Not enough pages to breaking it up
+		{	
+			for ($counter = 1; $counter <= $lastpage; $counter++)
+			{
+				if ($counter == $page){
+					$paginate.= "<span class='current'>$counter</span>";
+				}else{
+					$paginate.= "<a href='$targetpage&page=$counter' class='defPage'>$counter</a>";}					
+			}
+		}
+		elseif($lastpage > 5 + ($stages * 2))	// Enough pages to hide a few?
+		{
+			// Beginning only hide later pages
+			if($page < 1 + ($stages * 2))		
+			{
+				for ($counter = 1; $counter < 4 + ($stages * 2); $counter++)
+				{
+					if ($counter == $page){
+						$paginate.= "<span class='current'>$counter</span>";
+					}else{
+						$paginate.= "<a href='$targetpage&page=$counter' class='defPage'>$counter</a>";}					
+				}
+				$paginate.= "...";
+				$paginate.= "<a href='$targetpage&page=$LastPagem1' class='defPage'>$LastPagem1</a>";
+				$paginate.= "<a href='$targetpage&page=$lastpage'>$lastpage</a>";		
+			}
+			// Middle hide some front and some back
+			elseif($lastpage - ($stages * 2) > $page && $page > ($stages * 2))
+			{
+				$paginate.= "<a href='$targetpage&page=1' class='defPage'>1</a>";
+				$paginate.= "<a href='$targetpage&page=2' class='defPage'>2</a>";
+				$paginate.= "...";
+				for ($counter = $page - $stages; $counter <= $page + $stages; $counter++)
+				{
+					if ($counter == $page){
+						$paginate.= "<span class='current'>$counter</span>";
+					}else{
+						$paginate.= "<a href='$targetpage&page=$counter' class='defPage'>$counter</a>";}					
+				}
+				$paginate.= "...";
+				$paginate.= "<a href='$targetpage&page=$LastPagem1' class='defPage'>$LastPagem1</a>";
+				$paginate.= "<a href='$targetpage&page=$lastpage'>$lastpage</a>";		
+			}
+			// End only hide early pages
+			else
+			{
+				$paginate.= "<a href='$targetpage&page=1' class='defPage'>1</a>";
+				$paginate.= "<a href='$targetpage&page=2' class='defPage'>2</a>";
+				$paginate.= "...";
+				for ($counter = $lastpage - (2 + ($stages * 2)); $counter <= $lastpage; $counter++)
+				{
+					if ($counter == $page){
+						$paginate.= "<span class='current'>$counter</span>";
+					}else{
+						$paginate.= "<a href='$targetpage&page=$counter' class='firstPage'>$counter</a>";}					
+				}
+			}
+		}
+					
+				// Next
+		if ($page < $counter - 1){ 
+			$paginate.= "<a href='$targetpage&page=$next' id='NEXTpageActive'>Следваща</a>";
+		}else{
+			$paginate.= "<span class='disabled' id='NEXTpagedisabled'>Следваща</span>";
+			}
+			
+		$paginate.= "</div>";		
+	
+	
+}
+				
+				
+				
+				// Странициранее ... 
+  
+// $_conf = mysqli_query($_db,"SELECT * FROM `image-gallery`  ORDER BY `id` DESC");
+ $num = mysqli_num_rows($_conf);
+ 
+
+?>
+<div id='panel-top'>{{PLUGIN_TITLE}}</div>
+<div id='panel-bottom'>
+<?php
+ if($num < 1)
+ {
+   error('Все още няма добавени снимки ;(');
+ }
+if($paginate) {echo $paginate."<br />";	 }
+	 while($p =  mysqli_fetch_array($_conf))
+	 {
+	   echo "<a href='./?p=gallery&w=view&i=".$p['id']."'><div style=\"background: #000 url(".$p['thumb_image'].") center no-repeat; \" title=\"".stripcslashes($p['title'])."\"  class='image_thumb'></div></a>";
+	 }
+	 
+if($paginate) { echo "<div style='margin-top:12px;'>".$paginate."</div>";	 }
+break;
+
+case "view":
+
+
+ $imgid = trim(htmlspecialchars($_GET['i']));
+ $_conf = mysqli_query($_db,"SELECT * FROM `image-gallery` WHERE `id`='$imgid'");
+ $num = mysqli_num_rows($_conf);
+
+ $p  = mysqli_fetch_array($_conf);
+?>
+<div id='panel-top'><?php echo stripcslashes($p['title']);?></div>
+<div id='panel-bottom'>
+<?php 
+ 
+ echo "<img src=\"".stripcslashes($p['image'])."\"  width='400' title=\"".stripcslashes($p['title'])." - ".maketime($p['timestamp'])."\" alt=\"".stripcslashes($p['title'])." - ".maketime($p['timestamp'])."\" >";
+
+  if( !is_integer($imgid) && $num < 1)
+ {
+    error('Снимката НЕ съществува или е била изтрита от Администратор !');
+ }
+ 
+break;
+}
+?>
+</div>

@@ -1,0 +1,1 @@
+<div style='color:#666;text-align:center;font-size:10px;'>Код и дизайн: <b>Димитър Папазов</b> [ voTkaPoweR ]</div>

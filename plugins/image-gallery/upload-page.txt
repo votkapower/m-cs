@@ -1,0 +1,164 @@
+<?php
+ $way_to_upload = "link"; // начин на качване
+ if($_SESSION['is_logged'] != true)
+ {
+  header("Location: ./");
+  exit;
+ }
+$redir_cont = trim("
+<?php
+header(\"Location:  ./?p=index \");
+exit;
+"); // съдържането на ИНдех.пхп  -> за препращане
+?>
+<div id='panel-top'>Качване на снимка</div>
+<div id='panel-bottom'>
+ 
+ 
+  <?php 
+   
+   if($way_to_upload == "upload")
+	{
+  ?>
+	<form method='post' action='' enctype='multipart/form-data'>
+	
+		<b>Заглавие</b> на снимката <br />
+		<input type='text' name='title' style='width:350px;' value="" />
+		<br />
+		
+		
+		<b>Избери</b> снимката <br />
+		<input type='file' name='img'  style='width:300px;' value="" /> само: <b>JPG</b>
+		<br />
+		
+		<input type='submit' id='button' name='upload-image' value="Качи снимката"/>
+		<?php
+		if(isset($_POST['upload-image']))
+		{
+		
+		  $title = trim(addslashes($_POST['title']));
+		  $avtor = $_SESSION['user']['username'];
+		  $time  = time();
+		  $f_name  = $_FILES['img']['name'];
+		  $f_tmp  = $_FILES['img']['tmp_name'];
+		  $f_type  = $_FILES['img']['type'];
+		  $f_size  = $_FILES['img']['size'];
+		
+		//  echo  $f_name ." <br>"; -> name
+		// echo  $f_type ." <br>"; -> image/jpeg 
+		// echo  $f_tmp  ." <br>";  -> D:\Xampp\tmp\php86.tmp
+		
+				if( $f_type != "image/jpeg"  ) // Ако НЕ е jpg или jpeg
+				{
+				  error("Снимката трябва да е <b>JPEG</b> ($f_type) формат !");
+				}
+				else if( $f_size > 5242880) //  по - голямо от 5 МБ -> 5242880 Байта
+				{
+				  error("Снимката трябва да е до <b>5 МБ </b> !");
+				}
+				else
+					{
+					   if(!is_dir("./images/image-gallery")) // ако няма такава папака
+						{
+						  mkdir("./images/image-gallery", 0777); // направи я !
+							$fo = fopen("./images/image-gallery/index.php", "a+"); // отварям файла
+							fwrite($fo, $redir_cont ); // слагам новото съдържание
+							fclose($fo); // затварям файла
+						}
+						
+						$fname = randomname($f_name, 12); // произволно име
+						$file_dir = mkdir("./images/image-gallery/".$fname, 0777); // прави  папка на файла
+						
+						move_uploaded_file($f_tmp , "./images/image-gallery/".$fname."/".$fname.".jpg"); // ,, мести файла в папката галерия 
+						make_thumb("./images/image-gallery/".$fname."/".$fname.".jpg", "./images/image-gallery/".$fname."/thumb_".$fname.".jpg", 120); // прави Тумбнейл
+						$fo = fopen("./images/image-gallery/".$fname."/index.php", "a+"); // отварям файла
+						fwrite($fo, $redir_cont ); // слагам новото съдържание
+						fclose($fo); // затварям файла
+						
+						
+						mysqli_query($_db,"INSERT INTO `image-gallery` (`title`,`author`,`image`,`uploaded`,`thumb_image`,`timestamp`) VALUES('$title','$avtor','./images/image-gallery/".$fname."/".$fname.".jpg','true','./images/image-gallery/".$fname."/thumb_".$fname.".jpg','$time')") ;
+						ok("Снимката беше успешно качена :)"); // казваме ,че плъгина Е инсталиран 
+						echo "<META HTTP-EQUIV=\"refresh\" CONTENT=\"2;URL=./?p=gallery\" >"; // презареждаме страницата
+					}
+		
+		}
+		?>
+		
+	</form>
+  <?php
+	}
+	else
+		{
+	?>
+		
+		<form method='post' action='' >
+	
+		<b>Заглавие</b> на снимката <br />
+		<input type='text' name='title' style='width:350px;' value="" />
+		<br />
+		
+		
+		<b>Линк</b> до снимката <br />
+		<input  name='img'  style='width:320px;' value="" /> само: <b>JPG</b>
+		<br />
+		
+		<input type='submit' id='button' name='upload-image' value="Качи снимката"/>
+		<?php
+		if(isset($_POST['upload-image']))
+		{
+			$title = trim(addslashes($_POST['title']));
+			$image = trim(addslashes($_POST['img']));
+			$avtor = $_SESSION['user']['username'];
+			$time  = time();
+ 			if( empty($title))
+			{
+			   error("Попълни всички полета !");
+			}
+			else if( strtolower(end(explode(".",$image))) != "jpg" )
+			{
+			   error("Снимката трябва да е <b>JPG</b> (".end(explode(".",$image)).") !");
+			}
+			else
+				{
+				
+				 if(!is_dir("./images/image-gallery")) // ако няма такава папака
+						{
+						  mkdir("./images/image-gallery", 0777); // направи я !
+							$fo = fopen("./images/image-gallery/index.php", "a+"); // отварям файла
+							fwrite($fo, $redir_cont ); // слагам новото съдържание
+							fclose($fo); // затварям файла
+						}
+						
+						
+				/// Вземане на  Рзмера на файла  от URL
+				
+				$img = file_get_contents($image); //еземам снисмката
+
+				$fname = randomname($image, 12); // произволно име
+				$file_dir = mkdir("./images/image-gallery/".$fname, 0777); // прави  папка на файла
+				
+				$fp = fopen( "./images/image-gallery/".$fname."/".$fname.".jpg", "a+"); // ,, мести файла в папката галерия 
+				fwrite($fp, $img);// слагаме самата картинка
+				fclose($fp);// Zatwarqmm faiiilЪЪ .. :D
+				
+				make_thumb("./images/image-gallery/".$fname."/".$fname.".jpg", "./images/image-gallery/".$fname."/thumb_".$fname.".jpg", 120); // прави Тумбнейл
+				
+				$fo = fopen("./images/image-gallery/".$fname."/index.php", "a+"); // отварям файла
+				fwrite($fo, $redir_cont ); // слагам новото съдържание
+				fclose($fo); // затварям файла
+				
+				
+				mysqli_query($_db,"INSERT INTO `image-gallery` (`title`,`author`,`image`,`uploaded`,`thumb_image`,`timestamp`) VALUES('$title','$avtor','./images/image-gallery/".$fname."/".$fname.".jpg','false','./images/image-gallery/".$fname."/thumb_".$fname.".jpg','$time')");
+				ok("Снимката беше успешно качена :)"); // казваме ,че плъгина Е инсталиран 
+				echo "<META HTTP-EQUIV=\"refresh\" CONTENT=\"2;URL=./?p=gallery\" >"; // презареждаме страницата
+				}
+		}
+		?>
+		</form>
+		
+<?php
+		}
+?>
+	
+
+</div>

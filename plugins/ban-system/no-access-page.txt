@@ -1,0 +1,33 @@
+<?php
+mysqli_query($_db,"SET NAMES utf8"); // ENCODING FIX
+$ip = $_SERVER['REMOTE_ADDR'];
+$user_q = mysqli_query($_db,"SELECT * FROM `banned-users` WHERE `session-ip`='$ip'");
+$banned = mysqli_fetch_array($user_q);
+
+if(mysqli_num_rows($user_q) < 1)
+{
+ header("Location: ./");
+ exit;
+}
+
+if($banned['banned-to-time'] < time())
+{
+ mysqli_query($_db,"DELETE FROM `banned-users` WHERE `session-ip`='$ip' ");
+ header("Location: ./");
+ exit;
+}
+?> 
+<div id='panel-top'>Упс, май си оплескал работата .. </div>
+<div id='panel-bottom'>
+     <b><center style='padding:5px;font-size:28px;color:#af2b2b;text-shadow:0px 1px 0px #333;'><?php echo $banned['session-ip'];?></center></b>
+     <center style='padding:5px;font-size:14px;color:#af2b2b;'>Ти нямаш достъп до сайта ! </center>
+     <center style='padding:5px;font-size:17px;color:#af2b2b;'><?php echo $banned['reason'];?></center>
+	 
+	 
+	 <br />
+	 <br />
+	 <center><small>Ти беше баннат от <b><?php echo $banned['banned-from-admin'];?></b>, бана ти изтича на <b><?php echo date("d.m.Yг. / H:iч.",$banned['banned-to-time']); ?></b></small></center>
+	
+	 
+
+</div>
